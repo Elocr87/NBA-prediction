@@ -16,8 +16,8 @@ setwd("C:/Users/XXX/Desktop")
 
 #Cargamos los dataset
 
-partidos<-read.csv("stats.csv", header=T,sep=";")
-partidosNN<-read.csv("stats NN.csv", header=T,sep=";")
+partidos<-read.csv("Prediccion_Partidos.csv", header=T,sep=";")
+partidosNN<-read.csv("Prediccion_Partidos_NN.csv", header=T,sep=";")
 
 #estructura dataset
 
