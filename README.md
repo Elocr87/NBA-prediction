@@ -1,6 +1,8 @@
-# NBA-prediction
+# Predicción Resultados NBA 17-18
 
-This project is divided in 2 scripts:
+Basado en la temporada 2017-18 de la NBA para predecir ganador del partido. Este proyecto está dividido en 2 scripts:
 
-1. ESPN NBA data games - Getting all the data (score and table stats) from ESPN site.
-2.   
+1. ESPN_NBA_stats - Se obtienen las estadísticas de los partidos.
+2. Prediccion_Partidos* - Se ejecutan diferentes algoritmos predictivos (Random Forest, Decision Tree, Adabost, Logit, SVM, Neural Network) con el fin de determinar que modelo es más certero para la predicción del ganador del partido.
+
+*Previamente a la carga del .csv en R, se han hecho unas modificaciones en Excel.
