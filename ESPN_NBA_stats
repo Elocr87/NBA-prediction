@@ -1,7 +1,7 @@
 library(rvest) #scrapping
 
-#Primer partido temporada 2017/18=400974437,400975200
-#Último partido 15/02/2018=400975612
+#Primer partido temporada 2017/18=400974437
+#Ãšltimo partido 15/02/2018=400975612
 initgame <-400975556
 endgame <- 400975612
 #game<-400975460
@@ -12,19 +12,21 @@ for(game in initgame:endgame){
   
   url <- paste("http://espndeportes.espn.com/basquetbol/nba/duelo?juegoId=", game, sep="")
   
-  html <- read_html(url)#leemos la página
+  html <- read_html(url)#leemos la pÃ¡gina
+  
+  #Sacar tabla estadÃ­stica
   score<-html_nodes(html,"#teamstats-wrap td") #seleccionamos los nudos que queremos leer
   score<-html_text(score) #Lo leemos    
   score <- matrix(score,ncol=3,byrow = TRUE)
   
-  d<-gsub("(\t|\n)*","",score) #quitamos /t y /n
-  d<-t(data.frame(d)) #lo convertimos en data frame y lo trasponemos
-  colnames(d) <- d[1,] 
-  d = d[-1,]
+  tabla_s<-gsub("(\t|\n)*","",score) #quitamos /t y /n
+  tabla_s<-t(data.frame(tabla_s)) #lo convertimos en data frame y lo trasponemos
+  colnames(tabla_s) <- tabla_s[1,] 
+  tabla_s = tabla_s[-1,]
   
-  #Sacar Puntiación
+  #Sacar PuntuaciÃ³n
   puntos<-html_nodes(html,".score")
-  puntos = cbind( html_text(puntos),d )
+  puntos = cbind( html_text(puntos),tabla_s )
   
   #Sacar Equipo para local y visitante
   Equipo<-html_nodes(html,".short-name")
@@ -34,9 +36,10 @@ for(game in initgame:endgame){
   Local<-c("Vis","L")
   Stats0 = cbind( Local,Stats0 )
   
-  #Ponemos número de partido
+  #Ponemos nÃºmero de partido
   Stats1=cbind(game,Stats0)
-  Stats = rbind(Stats, Stats1)}
+  Stats = rbind(Stats, Stats1)
+}
 
 Stats=data.frame(Stats) #Convertimos en data frame
 
