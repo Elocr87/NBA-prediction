@@ -1,5 +1,3 @@
-#install.packages('cforest', dependencies=TRUE, repos='http://cran.rstudio.com/')
-
 library(plyr) #para contar
 library(adabag) #adaboost
 library(randomForest) 
@@ -14,7 +12,7 @@ library(neuralnet) #neural network
 
 #establecemos el directorio de trabajo
 
-setwd("C:/Users/eloi.canas/Desktop")
+setwd("C:/Users/XXX/Desktop")
 
 #Cargamos los dataset
 
@@ -35,16 +33,17 @@ ind = sample(1:nrow(partidosNN),nrow(partidosNN)/2, replace = FALSE)
 trainDataNN<-partidosNN[ind,]
 testDataNN<-partidosNN[-ind,]
 
-#Creamos 2 variables y as� solo cambiar estas
+#Creamos 2 variables 
 train=trainData
 test=train
-##
+
 trainNN=trainDataNN
 testNN=trainNN
 
-#############�RBOL DE DECISI�N#####################
+#############ÁRBOL DE DECISIÓN#####################
 
 #############CTREE 1#################
+#Solo con estadística a favor
 Arboldecision=ctree(Ganador~Puntos+Local+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                       Ptscontrataque+Ptszona+Ptsperdida,train)
 
@@ -61,6 +60,7 @@ Modelos=data.frame(Modelos)
 names(Modelos)[1]="Modelos"
 
 #############CTREE 2#################
+#Añadimos Conferencias y Niveles de equipo
 Arboldecision=ctree(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                     +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                       Ptscontrataque+Ptszona+Ptsperdida,train)
@@ -75,6 +75,7 @@ Acierto2=round(sum(testtree==test$Ganador)/length(test$Ganador)*100,2)
 Modelos=cbind(Modelos,Acierto2)
 
 #############CTREE 3#################
+#Añadimos Estadística del equipo contrario
 Arboldecision=ctree(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                     +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                       Ptscontrataque+Ptszona+Ptsperdida+T2AR+T2IR+T3AR+T3IR+TLAR+TLIR+RebR+RebOR+RebDR+AsistR
@@ -91,12 +92,13 @@ Modelos=cbind(Modelos,Acierto3)
 Modelos
 
 #############rpart 1#################
+#Solo con estadística a favor
 
 ArbolRpart<-rpart(Ganador~Puntos+Ptsencontra+Local+T2A+T2I+T3A+T3I
                   +TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                     Ptscontrataque+Ptszona+Ptsperdida,train)
 
-#visualizamos el �rbol
+#visualizamos el árbol
 
 rpart.plot(ArbolRpart,extra=4)
 
@@ -104,17 +106,15 @@ rpart.plot(ArbolRpart,extra=4)
 
 plotcp(ArbolRpart)
 
-
 #podamos
 pArbolRpart<-prune(ArbolRpart,cp=ArbolRpart$cptable[which.min(ArbolRpart$cptable[,"xerror"]),"CP"])
 rpart.plot(pArbolRpart,extra=6)
 
 rpart.plot(pArbolRpart,extra=6)
 
-#probamos el �rbol con el test
+#probamos el árbol con el test
 testPredRpart<-predict(pArbolRpart,test,typle="class")
 head(testPredRpart)
-
 
 Ganador=cbind(testPredRpart,test)
 Ganador=data.frame(Ganador$V,Ganador$Ganador)
@@ -135,6 +135,7 @@ names(Rpart)[1]="Modelos"
 
 
 #############rpart 2#################
+#Añadimos Conferencias y Niveles de equipo
 
 ArbolRpart<-rpart(Ganador~Local+Conferencia+Nivel+ConfRival+NivelRival+T2A+T2I+T3A+T3I
                   +TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
@@ -142,7 +143,7 @@ ArbolRpart<-rpart(Ganador~Local+Conferencia+Nivel+ConfRival+NivelRival+T2A+T2I+T
                   +RebDR+AsistR+RobosR+TaponesR+PerdidasR
                   +PtsperdidaR+PtscontrataqueR+PtszonaR+FaltasR+TecnicasR+IntencionalesR,train)
 
-#visualizamos el �rbol
+#visualizamos el árbol
 
 rpart.plot(ArbolRpart,extra=4)
 
@@ -155,7 +156,7 @@ pArbolRpart<-prune(ArbolRpart,cp=ArbolRpart$cptable[which.min(ArbolRpart$cptable
 
 rpart.plot(pArbolRpart,extra=6)
 
-#probamos el �rbol con el test
+#probamos el árbol con el test
 testPredRpart<-predict(pArbolRpart,test,typle="class")
 head(testPredRpart)
 
@@ -176,6 +177,7 @@ Acierto2=round(Resultado/Numpartidos*100,2)
 Rpart=cbind(Rpart,Acierto2)
 
 #############rpart 3#################
+#Añadimos Estadística del equipo contrario
 
 ArbolRpart<-rpart(Ganador~Local+Conferencia+Nivel+ConfRival+NivelRival+T2A+T2I+T3A+T3I
                   +TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
@@ -183,7 +185,7 @@ ArbolRpart<-rpart(Ganador~Local+Conferencia+Nivel+ConfRival+NivelRival+T2A+T2I+T
                   +RebDR+AsistR+RobosR+TaponesR+PerdidasR+PtsperdidaR+PtscontrataqueR+PtszonaR
                   +FaltasR+TecnicasR+IntencionalesR,train)
 
-#visualizamos el �rbol
+#visualizamos el árbol
 
 rpart.plot(ArbolRpart,extra=4)
 
@@ -196,7 +198,7 @@ pArbolRpart<-prune(ArbolRpart,cp=ArbolRpart$cptable[which.min(ArbolRpart$cptable
 
 rpart.plot(pArbolRpart,extra=6)
 
-#probamos el �rbol con el test
+#probamos el árbol con el test
 testPredRpart<-predict(pArbolRpart,test,typle="class")
 head(testPredRpart)
 
@@ -219,6 +221,7 @@ Modelos=rbind(Modelos,Rpart)
 ##################RANDOM FOREST#################
 
 ###############random Forest 1#############
+#Solo con estadística a favor
 
 Modelo<-randomForest(Ganador~Puntos+Ptsencontra+Local+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD
                      +Asist+Robos+Tapones+Perdidas+Faltas+Ptscontrataque
@@ -227,7 +230,7 @@ Modelo<-randomForest(Ganador~Puntos+Ptsencontra+Local+T2A+T2I+T3A+T3I+TLA+TLI+Re
                      mtry=20,             # cantidad de variables
                      replace=T)          # muestras con reemplazo
 
-# Crea prediccion y Matriz de confusion
+# Prediccion
 Prediccion <- predict (Modelo , test,typle="class")
 
 # Matriz de Confusion
@@ -240,6 +243,7 @@ randomF=data.frame(randomF)
 names(randomF)[1]="Modelos"
 
 ###############random Forest 2#############
+#Añadimos Conferencias y Niveles de equipo
 
 Modelo<-randomForest(Ganador~Puntos+Ptsencontra+Local+Conferencia+Nivel+ConfRival+NivelRival
                      +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
@@ -248,7 +252,7 @@ Modelo<-randomForest(Ganador~Puntos+Ptsencontra+Local+Conferencia+Nivel+ConfRiva
                      mtry=24,             # cantidad de variables
                      replace=T)          # muestras con reemplazo
 
-# Crea prediccion y Matriz de confusion
+# Prediccion
 Prediccion <- predict (Modelo , test,typle="class"); 
 
 # Matriz de Confusion
@@ -260,6 +264,7 @@ randomF=cbind(randomF,Acierto2)
 randomF
 
 ###############random Forest 3#############
+#Añadimos Estadística del equipo contrario
 
 Modelo<-randomForest(Ganador~Puntos+Ptsencontra+Local+Conferencia+Nivel+ConfRival+NivelRival
                      +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
@@ -270,7 +275,7 @@ Modelo<-randomForest(Ganador~Puntos+Ptsencontra+Local+Conferencia+Nivel+ConfRiva
                      mtry=43,             # cantidad de variables
                      replace=T)          # muestras con reemplazo
 
-# Crea prediccion y Matriz de confusion
+# Prediccion
 Prediccion <- predict (Modelo , test,typle="class"); 
 
 # Matriz de Confusion
@@ -279,10 +284,12 @@ MC
 Acierto3=round(sum(Prediccion==test$Ganador)/length(test$Ganador)*100,2)
 
 randomF=cbind(randomF,Acierto3)
-Modelos=rbind(Modelos,randomF)
+Modelos=rbind(Modelos,randomF) #Juntamos con modelos anteriores
 
 #############adaboost#############
 ########adaboost1#############
+#Solo con estadística a favor
+
 model <- boosting(Ganador~Puntos+Local+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist
                   +Robos+Tapones+Perdidas+Faltas+
                     Ptscontrataque+Ptszona+Ptsperdida,train)
@@ -290,7 +297,7 @@ model <- boosting(Ganador~Puntos+Local+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+R
 # Importancia de cada variable
 round(model$importance,2)
 
-# predict necesita el par�metro newdata
+# Prediccion
 results <- predict(object = model, test, type = "class")
 
 results$confusion
@@ -303,6 +310,8 @@ Aboost=data.frame(Aboost)
 names(Aboost)[1]="Modelos"
 
 ########adaboost2#############
+#Añadimos Conferencias y Niveles de equipo
+
 model <- boosting(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                   +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                     Ptscontrataque+Ptszona+Ptsperdida,train)
@@ -310,7 +319,7 @@ model <- boosting(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+N
 # Importancia de cada variable
 round(model$importance,2)
 
-# predict necesita el par�metro newdata
+# predecimos
 results <- predict(object = model, test, type = "class")
 
 results$confusion
@@ -321,6 +330,7 @@ Acierto2=round(100 * sum(diag(results$confusion)) / sum(results$confusion),2)
 Aboost=cbind(Aboost,Acierto2)
 
 ########adaboost3#############
+#Añadimos Estadística del equipo contrario
 model <- boosting(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                   +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                     Ptscontrataque+Ptszona+Ptsperdida+T2AR+T2IR+T3AR+T3IR+TLAR+TLIR+RebR+RebOR+RebDR+AsistR+RobosR
@@ -329,7 +339,7 @@ model <- boosting(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+N
 # Importancia de cada variable
 round(model$importance,2)
 
-# predict necesita el par�metro newdata
+# Prediccion
 results <- predict(object = model, test, type = "class")
 
 results$confusion
@@ -338,13 +348,12 @@ results$confusion
 Acierto3=round(100 * sum(diag(results$confusion)) / sum(results$confusion),2)
 
 Aboost=cbind(Aboost,Acierto3)
-Modelos=rbind(Modelos,Aboost)
-
-##################modelo linear----lm(X~Y,dataset)
-######################################
+Modelos=rbind(Modelos,Aboost) #Juntamos con modelos anteriores
 
 #############LOGIT REGRESSION#############
 #############LOGIT REGRESSION 1#########
+
+#Solo con estadística a favor
 
 mylogit <- glm(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival+T2A+T2I+T3A
                +T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+Ptscontrataque+Ptszona+Ptsperdida+
@@ -377,6 +386,8 @@ names(Logit)[1]="Modelos"
 
 #############LOGIT REGRESSION 2#########
 
+#Añadimos Conferencias y Niveles de equipo
+
 mylogit <- glm(Ganador~Ptszona+Conferencia+Nivel+ConfRival+NivelRival+T2IR+TLIR
                +RobosR+PtszonaR-1, train, family = "binomial")
 summary(mylogit)
@@ -401,6 +412,7 @@ Acierto2=round(Resultado/Numpartidos*100,2)
 Logit=cbind(Logit,Acierto2)
 
 #############LOGIT REGRESSION 3#########
+#Añadimos Estadística del equipo contrario
 
 mylogit <- glm(Ganador~Ptszona+Conferencia+Nivel+ConfRival+NivelRival,train, family = "binomial")
 summary(mylogit)
@@ -423,10 +435,12 @@ Numpartidos=sum(as.numeric(Totalpartidos$freq))
 Acierto3=round(Resultado/Numpartidos*100,2)
 
 Logit=cbind(Logit,Acierto3)
-Modelos=rbind(Modelos,Logit)
+Modelos=rbind(Modelos,Logit) #Juntamos con modelos anteriores
 
 #########################SVM#####################
 #####################SVM1################
+#Solo con estadística a favor
+
 model <- svm(Ganador~Puntos+Local+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                Ptscontrataque+Ptszona+Ptsperdida,train)
 
@@ -439,6 +453,7 @@ svm=data.frame(svm)
 names(svm)[1]="Modelos"
 
 #####################SVM2################
+#Añadimos Conferencias y Niveles de equipo
 model <- svm(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
              +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                Ptscontrataque+Ptszona+Ptsperdida,train)
@@ -450,6 +465,7 @@ Acierto2=round(sum(predictedY==test$Ganador)/length(test$Ganador)*100,2)
 svm=cbind(svm,Acierto2)
 
 #####################SVM3################
+#Añadimos Estadística del equipo contrario
 model <- svm(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
              +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                Ptscontrataque+Ptszona+Ptsperdida+T2AR+T2IR+T3AR+T3IR+TLAR+TLIR+RebR+RebOR+RebDR+AsistR+RobosR
@@ -460,10 +476,11 @@ predictedY <- predict(model, test)
 Acierto3=round(sum(predictedY==test$Ganador)/length(test$Ganador)*100,2)
 
 svm=cbind(svm,Acierto3)
-Modelos=rbind(Modelos,svm)
+Modelos=rbind(Modelos,svm) #Juntamos con modelos anteriores
 
 #############NEURAL NETWORK#############
 #############NEURAL NETWORK 1#########
+#Solo con estadística a favor
 
 NeuralN = nnet(Ganador~Puntos+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                  Ptscontrataque+Ptszona+Ptsperdida,trainData, skip=TRUE,size=25)
@@ -480,6 +497,7 @@ names(NN)[1]="Modelos"
 
 
 #############NEURAL NETWORK 2#########
+#Añadimos Conferencias y Niveles de equipo
 
 NeuralN = nnet(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
@@ -493,6 +511,7 @@ Acierto2=round(sum(Prediccion==test$Ganador)/length(test$Ganador)*100,2)
 NN=cbind(NN,Acierto2)
 
 #############NEURAL NETWORK 3#########
+#Añadimos Estadística del equipo contrario
 
 NeuralN = nnet(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
@@ -507,10 +526,10 @@ NN=cbind(NN,Acierto3)
 Modelos=rbind(Modelos,NN)
 Modelos
 
-
-#############NEURAL NETK############# 
+#############NEURAL NET############# 
 
 #############NEURAL NET 1-algoritmo="rprop+"#########
+#Solo con estadística a favor
 
 Nnet<-neuralnet(Ganador~Puntos+Local+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                   Ptscontrataque+Ptszona+Ptsperdida, trainNN,hidden=c(2),err.fct="sse", act.fct = "logistic",linear.output=F)
@@ -522,7 +541,7 @@ head(Nnet$net.result[[1]]) #porcentaje victoria de cada partido
 
 nn1=ifelse(Nnet$net.result[[1]]>0.5,1,0)#ponemos 1 en caso de mayor de 0.5 y 0 lo contrario
 
-MC<-table(testNN$Ganador,nn1) #???matriz de confusi�n
+MC<-table(testNN$Ganador,nn1) #???matriz de confusión
 MC
 
 Acierto=round((1-mean(testNN$Ganador!=nn1))*100,2) #cuanto acierta nuestro modelo
@@ -533,6 +552,8 @@ NeuralNet=data.frame(NeuralNet)
 names(NeuralNet)[1]="Modelos"
 
 #############NEURAL NET 2-algoritmo="rprop+"#########
+#Añadimos Conferencias y Nivels de equipo
+
 Nnet<-neuralnet(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                 +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                   Ptscontrataque+Ptszona+Ptsperdida, trainNN,hidden=c(4),err.fct="sse", act.fct = "logistic",linear.output=F)
@@ -542,13 +563,15 @@ head(Nnet$net.result[[1]]) #porcentaje victoria de cada partido
 
 nn1=ifelse(Nnet$net.result[[1]]>0.5,1,0)#ponemos 1 en caso de mayor de 0.5 y 0 lo contrario
 
-MC<-table(testNN$Ganador,nn1) #???matriz de confusi�n
+MC<-table(testNN$Ganador,nn1) #matriz de confusión
 MC
 
 Acierto2=round((1-mean(testNN$Ganador!=nn1))*100,2) #cuanto acierta nuestro modelo
 NeuralNet=cbind(NeuralNet,Acierto2)
 
 #############NEURAL NET 3-algoritmo="rprop+"#########
+#Añadimos Estadística del equipo contrario
+
 Nnet<-neuralnet(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                 +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                   Ptscontrataque+Ptszona+Ptsperdida+T2AR+T2IR+T3AR+T3IR+TLAR+TLIR+RebR+RebOR+RebDR+AsistR+RobosR
@@ -561,7 +584,7 @@ head(Nnet$net.result[[1]]) #porcentaje victoria de cada partido
 
 nn1=ifelse(Nnet$net.result[[1]]>0.5,1,0)#ponemos 1 en caso de mayor de 0.5 y 0 lo contrario
 
-MC<-table(testNN$Ganador,nn1) #???matriz de confusi�n
+MC<-table(testNN$Ganador,nn1) #matriz de confusión
 MC
 
 Acierto3=round((1-mean(testNN$Ganador!=nn1))*100,2) #cuanto acierta nuestro modelo
@@ -569,6 +592,7 @@ NeuralNet=cbind(NeuralNet,Acierto3)
 Modelos=rbind(Modelos,NeuralNet)
 
 #############NEURAL NET 1-algoritmo="sag"#########
+#Solo con estadística a favor
 
 Nnet<-neuralnet(Ganador~Puntos+Local+Ptsencontra+T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                   Ptscontrataque+Ptszona+Ptsperdida, trainNN,hidden=c(3),algorithm = "sag", linear.output=F)
@@ -579,7 +603,7 @@ head(Nnet$net.result[[1]]) #porcentaje victoria de cada partido
 
 nn1=ifelse(Nnet$net.result[[1]]>0.5,1,0)#ponemos 1 en caso de mayor de 0.5 y 0 lo contrario
 
-MC<-table(testNN$Ganador,nn1) #???matriz de confusi�n
+MC<-table(testNN$Ganador,nn1) #matriz de confusión
 MC
 
 Acierto=round((1-mean(testNN$Ganador!=nn1))*100,2) #cuanto acierta nuestro modelo
@@ -590,6 +614,8 @@ NeuralNet=data.frame(NeuralNet)
 names(NeuralNet)[1]="Modelos"
 
 #############NEURAL NET 2-algoritmo="sag"#########
+#Añadimos Conferencias y Niveles de equipo
+
 Nnet<-neuralnet(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                 +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                   Ptscontrataque+Ptszona+Ptsperdida, trainNN,hidden=c(4), algorithm = "sag", linear.output=F)
@@ -601,13 +627,15 @@ head(Nnet$net.result[[1]]) #porcentaje victoria de cada partido
 
 nn1=ifelse(Nnet$net.result[[1]]>0.5,1,0)#ponemos 1 en caso de mayor de 0.5 y 0 lo contrario
 
-MC<-table(testNN$Ganador,nn1) #???matriz de confusi�n
+MC<-table(testNN$Ganador,nn1) #matriz de confusión
 MC
 
 Acierto2=round((1-mean(testNN$Ganador!=nn1))*100,2) #cuanto acierta nuestro modelo
 NeuralNet=cbind(NeuralNet,Acierto2)
 
 #############NEURAL NET 3-algoritmo="sag"#########
+#Añadimos Estadística del equipo contrario
+
 Nnet<-neuralnet(Ganador~Puntos+Local+Ptsencontra+Conferencia+Nivel+ConfRival+NivelRival
                 +T2A+T2I+T3A+T3I+TLA+TLI+Reb+RebO+RebD+Asist+Robos+Tapones+Perdidas+Faltas+
                   Ptscontrataque+Ptszona+Ptsperdida+T2AR+T2IR+T3AR+T3IR+TLAR+TLIR+RebR+RebOR+RebDR+AsistR+RobosR
@@ -620,12 +648,13 @@ head(Nnet$net.result[[1]]) #porcentaje victoria de cada partido
 
 nn1=ifelse(Nnet$net.result[[1]]>0.5,1,0)#ponemos 1 en caso de mayor de 0.5 y 0 lo contrario
 
-MC<-table(testNN$Ganador,nn1) #???matriz de confusi�n
+MC<-table(testNN$Ganador,nn1) #matriz de confusión
 MC
 
 Acierto3=round((1-mean(testNN$Ganador!=nn1))*100,2) #cuanto acierta nuestro modelo
 NeuralNet=cbind(NeuralNet,Acierto3)
 NeuralNet
-Modelos=rbind(Modelos,NeuralNet)
+Modelos=rbind(Modelos,NeuralNet) #Juntamos con modelos anteriores
 Modelos
+
 write.csv(Modelos, paste("Modelos train.csv", sep=";"), row.names=FALSE)
